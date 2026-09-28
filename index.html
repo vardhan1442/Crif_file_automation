@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>x86 Instruction Automation Script Builder</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="app-header">
+    <h1>CRIF Register / Field Explorer</h1>
+    <p class="subtitle">Browse, filter, and generate automation assembly for CRIF-defined registers and fields</p>
+  </header>
+
+  <main class="app-main">
+    <section class="panel panel-crif">
+      <h2>CRIF Register / Field Browser</h2>
+      <p class="hint">Load a local CRIF XML file (e.g. <code>ccf_gpsb_top_crif.xml</code>) to search and filter
+        registers and fields. The file is parsed entirely in your browser and is never uploaded anywhere.</p>
+
+      <div class="crif-controls">
+        <label for="crifFileInput" class="file-label">
+          <span>Choose CRIF file&hellip;</span>
+          <input type="file" id="crifFileInput" accept=".xml">
+        </label>
+        <span id="crifFileStatus" class="crif-status">No file loaded</span>
+      </div>
+
+      <div class="crif-filters" hidden id="crifFilters">
+        <div class="field">
+          <label for="crifSearch">Search (name / description)</label>
+          <input type="text" id="crifSearch" placeholder="e.g. sai_mask, PG_CP, GPSB...">
+        </div>
+        <div class="field">
+          <label for="crifRegisterFileSelect">Register File</label>
+          <select id="crifRegisterFileSelect">
+            <option value="">All register files</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="crifAccessSelect">Field Access</label>
+          <select id="crifAccessSelect">
+            <option value="">Any access</option>
+          </select>
+        </div>
+        <div class="field">
+          <button type="button" id="crifClearBtn" class="secondary">Clear filters</button>
+        </div>
+      </div>
+
+      <p class="crif-result-count" id="crifResultCount"></p>
+      <p class="crif-status" id="crifSelectedFieldLabel">No fields selected</p>
+
+      <div class="crif-table-wrap" id="crifTableWrap" hidden>
+        <table id="crifTable">
+          <thead>
+            <tr>
+              <th>Select</th>
+              <th data-key="registerFile">Register File</th>
+              <th data-key="registerName">Register</th>
+              <th data-key="addressOffset">Offset</th>
+              <th data-key="fieldName">Field</th>
+              <th data-key="access">Access</th>
+              <th data-key="bitOffset">Bit Offset</th>
+              <th data-key="bitWidth">Bit Width</th>
+              <th data-key="reset">Reset (default)</th>
+              <th>Value to Write</th>
+              <th data-key="description">Description</th>
+            </tr>
+          </thead>
+          <tbody id="crifTableBody"></tbody>
+        </table>
+      </div>
+
+      <div class="crif-asm-controls" id="crifAsmControls" hidden>
+        <button type="button" id="crifGenAsmBtn">Generate assembly for filtered registers/fields</button>
+        <button type="button" id="crifGenSelectedAsmBtn" class="secondary">Generate for selected field(s)</button>
+        <button type="button" id="crifClearSelectionBtn" class="secondary">Clear selection</button>
+        <button type="button" id="crifResetValuesBtn" class="secondary">Reset values to defaults</button>
+        <button type="button" id="crifDownloadAsmBtn" class="secondary">Download full .asm</button>
+        <span class="crif-status" id="crifAsmStatus"></span>
+      </div>
+      <pre id="crifAsmOutput" class="crif-asm-output" hidden><code id="crifAsmCode"></code></pre>
+    </section>
+  </main>
+
+  <footer class="app-footer">
+    <p>&copy; 2026 crif_automation</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
