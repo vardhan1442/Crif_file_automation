@@ -333,7 +333,9 @@ const MAX_ASM_PREVIEW_BLOCKS = 300;
 const crifAsmControls = document.getElementById('crifAsmControls');
 const crifGenAsmBtn = document.getElementById('crifGenAsmBtn');
 const crifGenSelectedAsmBtn = document.getElementById('crifGenSelectedAsmBtn');
+const crifCopyAsmBtn = document.getElementById('crifCopyAsmBtn');
 const crifDownloadAsmBtn = document.getElementById('crifDownloadAsmBtn');
+const crifDownloadIncBtn = document.getElementById('crifDownloadIncBtn');
 const crifAsmStatus = document.getElementById('crifAsmStatus');
 const crifAsmOutput = document.getElementById('crifAsmOutput');
 const crifAsmCode = document.getElementById('crifAsmCode');
@@ -372,6 +374,29 @@ crifGenSelectedAsmBtn.addEventListener('click', () => {
 });
 
 crifDownloadAsmBtn.addEventListener('click', () => {
+  downloadFilteredAsFile('crif_register_field.asm');
+});
+
+crifDownloadIncBtn.addEventListener('click', () => {
+  downloadFilteredAsFile('crif_register_field.inc');
+});
+
+crifCopyAsmBtn.addEventListener('click', async () => {
+  const text = crifAsmCode.textContent;
+  if (!text) {
+    crifAsmStatus.textContent = 'Nothing to copy yet — generate assembly first.';
+    return;
+  }
+  const ok = await copyTextToClipboard(text);
+  crifAsmStatus.textContent = ok
+    ? 'Copied to clipboard.'
+    : 'Copy failed — your browser blocked clipboard access.';
+});
+
+// Builds the full (untruncated) assembly text for every filtered entry and
+// triggers a browser download with the given filename (.asm and .inc share
+// identical plain-text content, just a different conventional extension).
+function downloadFilteredAsFile(filename) {
   const entries = getFilteredCrifEntries();
   if (entries.length === 0) {
     crifAsmStatus.textContent = 'No entries match the current filters.';
@@ -384,10 +409,37 @@ crifDownloadAsmBtn.addEventListener('click', () => {
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = 'crif_register_field.asm';
+  a.download = filename;
   a.click();
   URL.revokeObjectURL(url);
-});
+}
+
+// navigator.clipboard can be unavailable/blocked under file://, so fall back
+// to a hidden-textarea + execCommand('copy') if it fails.
+async function copyTextToClipboard(text) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    try {
+      await navigator.clipboard.writeText(text);
+      return true;
+    } catch (err) {
+      // fall through to the execCommand fallback below
+    }
+  }
+  const textarea = document.createElement('textarea');
+  textarea.value = text;
+  textarea.style.position = 'fixed';
+  textarea.style.opacity = '0';
+  document.body.appendChild(textarea);
+  textarea.select();
+  let ok = false;
+  try {
+    ok = document.execCommand('copy');
+  } catch (err) {
+    ok = false;
+  }
+  document.body.removeChild(textarea);
+  return ok;
+}
 
 // Converts CRIF verilog-style literals (e.g. 48'h5538, 64'h40001000200) or
 // plain decimal strings into a "0x..." literal. Returns null if unparseable.
